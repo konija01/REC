@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REC – Research Environment for Cartography</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <div class="header-navigation">
+        <button class="icon-btn" id="previous-page">&#8592;</button>
+    </div>
+    <div class="container" id="page-1">
+        <h1>REC – Research Environment for Cartography</h1>
+        <p>Welcome! Please upload your images to start the evaluation.</p>
+        <input type="file" id="image-upload" multiple accept="image/*">
+        <button class="red-btn" id="start-evaluation">Start Evaluation</button>
+    </div>
+
+    <div class="container hidden" id="page-2">
+        <h1>Image Evaluation</h1>
+        <canvas id="canvas"></canvas>
+        <select id="category-select">
+            <option value="map">Map</option>
+            <option value="dataviz">Data Visualization</option>
+            <option value="text">Text</option>
+            <option value="illustration">Illustration</option>
+        </select>
+        <div class="navigation">
+            <button class="tool-btn" id="pen-tool">Pen Tool</button>
+            <button class="tool-btn" id="lasso-tool">Lasso Tool</button>
+            <button class="tool-btn" id="rectangle-tool">Rectangle Tool</button>
+            <button class="tool-btn gray-btn" id="eraser-tool">Eraser Tool</button>
+            <button class="tool-btn edit-tool" id="edit-tool">Edit Tool</button>
+            <button class="icon-btn" id="previous-image">&#9664;</button>
+            <button class="icon-btn" id="next-image">&#9654;</button>
+        </div>
+        <button class="red-btn" id="results">Results</button>
+    </div>
+
+    <div class="container hidden" id="page-3">
+        <h1>Results</h1>
+        <button class="red-btn" id="download-all-results">Download All Results</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,42 +11,83 @@
 </head>
 <body>
     <div class="header-navigation">
-        <button class="icon-btn" id="previous-page">&#8592;</button>
+        <button class="icon-btn" id="previous-page">
+            <span class="icon">&#8592;</span>
+        </button>
+        <button class="icon-btn" id="help-icon" title="Help">
+            <span class="icon">?</span>
+        </button>
     </div>
+
     <div class="container" id="page-1">
         <h1>REC – Research Environment for Cartography</h1>
         <p>Welcome! Please upload your images to start the evaluation.</p>
         <input type="file" id="image-upload" multiple accept="image/*">
-        <button class="red-btn" id="start-evaluation">Start Evaluation</button>
+        <button class="red-btn" id="start-evaluation">
+            Start Evaluation
+        </button>
     </div>
 
     <div class="container hidden" id="page-2">
+        <button class="icon-btn change-image-btn" id="previous-image">
+            <span class="icon">&#9664;</span>
+        </button>
         <h1>Image Evaluation</h1>
         <canvas id="canvas"></canvas>
+        <button class="icon-btn change-image-btn" id="next-image">
+            <span class="icon">&#9654;</span>
+        </button>
+    </div>
+
+    <div class="floating-toolbar" id="floating-panel">
+        <button class="tool-btn" id="pen-tool">
+            <span class="icon">✏️</span>
+        </button>
+        <button class="tool-btn" id="lasso-tool">
+            <span class="icon">🪢</span>
+        </button>
+        <button class="tool-btn" id="rectangle-tool">
+            <span class="icon">⬜</span>
+        </button>
+         <button class="tool-btn" id="edit-tool">
+            <span class="icon">🩹</span>
+        </button>
+        <button class="tool-btn less-gray-btn" id="eraser-tool">
+            <span class="icon">✂️</span>
+        </button>
         <select id="category-select">
             <option value="map">Map</option>
             <option value="dataviz">Data Visualization</option>
             <option value="text">Text</option>
             <option value="illustration">Illustration</option>
         </select>
-        <div class="navigation">
-            <button class="tool-btn" id="pen-tool">Pen Tool</button>
-            <button class="tool-btn" id="lasso-tool">Lasso Tool</button>
-            <button class="tool-btn" id="rectangle-tool">Rectangle Tool</button>
-            <button class="tool-btn gray-btn" id="eraser-tool">Eraser Tool</button>
-            <button class="tool-btn edit-tool" id="edit-tool">Edit Tool</button>
-            <button class="icon-btn" id="previous-image">&#9664;</button>
-            <button class="icon-btn" id="next-image">&#9654;</button>
-        </div>
-        <button class="red-btn" id="results">Results</button>
+        <button class="red-btn" id="results">
+            Results
+        </button>
     </div>
 
     <div class="container hidden" id="page-3">
-        <h1>Results</h1>
-        <button class="red-btn" id="download-all-results">Download All Results</button>
+        <h1>Please see your results</h1>
+        <div class="results-container">
+            <button class="red-btn" id="download-all-results">
+                Download All Results
+            </button>
+            <!-- prepared button for sending emails -->
+            <!--
+            <div class="divider"></div>
+            <button class="red-btn" id="send-email">
+                Send to Email
+            </button>
+            <input type="email" id="email-input" placeholder="Enter your email">
+            -->
+        </div>
+        <div class="evaluate-again-container">
+            <button class="gray-btn" id="evaluate-again">
+                Evaluate Again
+            </button>
+        </div>
     </div>
 
     <script src="script.js"></script>
 </body>
 </html>
-

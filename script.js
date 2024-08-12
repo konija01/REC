@@ -1,8 +1,10 @@
 const page1 = document.getElementById('page-1');
 const page2 = document.getElementById('page-2');
 const page3 = document.getElementById('page-3');
+const floatingPanel = document.getElementById('floating-panel');
 const startEvaluationBtn = document.getElementById('start-evaluation');
 const previousPageBtn = document.getElementById('previous-page');
+const resultsBtn = document.getElementById('results');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const categorySelect = document.getElementById('category-select');
@@ -11,10 +13,15 @@ const lassoToolBtn = document.getElementById('lasso-tool');
 const rectangleToolBtn = document.getElementById('rectangle-tool');
 const eraserToolBtn = document.getElementById('eraser-tool');
 const editToolBtn = document.getElementById('edit-tool');
-const resultsBtn = document.getElementById('results');
 const downloadAllResultsBtn = document.getElementById('download-all-results');
+/*
+const sendEmailBtn = document.getElementById('send-email');
+const emailInput = document.getElementById('email-input');
+*/
 const nextImageBtn = document.getElementById('next-image');
 const previousImageBtn = document.getElementById('previous-image');
+const helpIconBtn = document.getElementById('help-icon');
+const evaluateAgainBtn = document.getElementById('evaluate-again');
 
 let images = [];
 let currentImageIndex = 0;
@@ -28,16 +35,22 @@ let penPoints = [];
 let isDrawing = false;
 let selectedPoint = null;
 
-canvas.width = 1000;
-
 function showPage(page) {
     [page1, page2, page3].forEach(p => p.classList.add('hidden'));
     page.classList.remove('hidden');
+    if (page === page2) {
+        floatingPanel.style.display = 'flex';
+    } else {
+        floatingPanel.style.display = 'none';
+    }
 }
 
 startEvaluationBtn.addEventListener('click', () => {
     const files = document.getElementById('image-upload').files;
-    if (files.length === 0) return;
+    if (files.length === 0) {
+        alert('Please upload at least one image.');
+        return;
+    }
 
     images = Array.from(files).map(file => {
         const img = new Image();
@@ -45,25 +58,25 @@ startEvaluationBtn.addEventListener('click', () => {
         return { img, selections: [] };
     });
 
-    images[0].img.onload = () => {
-        resizeAndDrawImage(images[0].img);
-    };
+    images.forEach((image, index) => {
+        image.img.onload = () => {
+            if (index === 0) {
+                drawImage(image.img);
+            }
+        };
+    });
 
     showPage(page2);
 });
 
 previousPageBtn.addEventListener('click', () => {
+    saveCurrentSelection();
     showPage(page1);
 });
 
-previousImageBtn.addEventListener('click', () => {
-    if (currentImageIndex > 0) {
-        saveCurrentSelection();
-        currentImageIndex--;
-        selections = images[currentImageIndex].selections || [];
-        resizeAndDrawImage(images[currentImageIndex].img);
-        drawSelections();
-    }
+resultsBtn.addEventListener('click', () => {
+    saveCurrentSelection();
+    showPage(page3);
 });
 
 nextImageBtn.addEventListener('click', () => {
@@ -71,60 +84,63 @@ nextImageBtn.addEventListener('click', () => {
         saveCurrentSelection();
         currentImageIndex++;
         selections = images[currentImageIndex].selections || [];
-        resizeAndDrawImage(images[currentImageIndex].img);
+        drawImage(images[currentImageIndex].img);
+        drawSelections();
+    }
+});
+
+previousImageBtn.addEventListener('click', () => {
+    if (currentImageIndex > 0) {
+        saveCurrentSelection();
+        currentImageIndex--;
+        selections = images[currentImageIndex].selections || [];
+        drawImage(images[currentImageIndex].img);
         drawSelections();
     }
 });
 
 penToolBtn.addEventListener('click', () => {
-    isPenActive = true;
-    isLassoActive = false;
-    isRectangleActive = false;
-    isEraserActive = false;
-    isEditActive = false;
-    updateToolSelection();
-    canvas.style.cursor = 'crosshair';
+    setActiveTool('pen');
 });
 
 lassoToolBtn.addEventListener('click', () => {
-    isPenActive = false;
-    isLassoActive = true;
-    isRectangleActive = false;
-    isEraserActive = false;
-    isEditActive = false;
-    updateToolSelection();
-    canvas.style.cursor = 'crosshair';
+    setActiveTool('lasso');
 });
 
 rectangleToolBtn.addEventListener('click', () => {
-    isPenActive = false;
-    isLassoActive = false;
-    isRectangleActive = true;
-    isEraserActive = false;
-    isEditActive = false;
-    updateToolSelection();
-    canvas.style.cursor = 'crosshair';
+    setActiveTool('rectangle');
 });
 
 eraserToolBtn.addEventListener('click', () => {
-    isPenActive = false;
-    isLassoActive = false;
-    isRectangleActive = false;
-    isEraserActive = true;
-    isEditActive = false;
-    updateToolSelection();
-    canvas.style.cursor = 'cell';
+    setActiveTool('eraser');
 });
 
 editToolBtn.addEventListener('click', () => {
-    isPenActive = false;
-    isLassoActive = false;
-    isRectangleActive = false;
-    isEraserActive = false;
-    isEditActive = true;
-    updateToolSelection();
-    canvas.style.cursor = 'move';
+    setActiveTool('edit');
 });
+
+evaluateAgainBtn.addEventListener('click', () => {
+    images = [];
+    currentImageIndex = 0;
+    selections = [];
+    penPoints = [];
+    isDrawing = false;
+    selectedPoint = null;
+    document.getElementById('image-upload').value = '';
+    showPage(page1);
+});
+
+function setActiveTool(tool) {
+    isPenActive = tool === 'pen';
+    isLassoActive = tool === 'lasso';
+    isRectangleActive = tool === 'rectangle';
+    isEraserActive = tool === 'eraser';
+    isEditActive = tool === 'edit';
+    updateToolSelection();
+    updateCursor();
+    removeCanvasEventListeners();
+    addCanvasEventListeners();
+}
 
 function updateToolSelection() {
     penToolBtn.classList.toggle('selected', isPenActive);
@@ -134,46 +150,76 @@ function updateToolSelection() {
     editToolBtn.classList.toggle('selected', isEditActive);
 }
 
-canvas.addEventListener('mousedown', (e) => {
+function updateCursor() {
+    if (isPenActive || isLassoActive || isRectangleActive) {
+        canvas.style.cursor = 'crosshair';
+    } else if (isEraserActive) {
+        canvas.style.cursor = 'cell';
+    } else if (isEditActive) {
+        canvas.style.cursor = 'move';
+    } else {
+        canvas.style.cursor = 'default';
+    }
+}
+
+function removeCanvasEventListeners() {
+    canvas.removeEventListener('mousedown', handleCanvasMouseDown);
+    canvas.removeEventListener('mousemove', handleCanvasMouseMove);
+    canvas.removeEventListener('mouseup', handleCanvasMouseUp);
+    canvas.removeEventListener('dblclick', handleCanvasDblClick);
+}
+
+function addCanvasEventListeners() {
+    canvas.addEventListener('mousedown', handleCanvasMouseDown);
+    canvas.addEventListener('mousemove', handleCanvasMouseMove);
+    canvas.addEventListener('mouseup', handleCanvasMouseUp);
+    canvas.addEventListener('dblclick', handleCanvasDblClick);
+}
+
+function handleCanvasMouseDown(e) {
     if (isPenActive) {
         addPenPoint(e);
         isDrawing = true;
+    } else if (isLassoActive) {
+        startLasso(e);
+    } else if (isRectangleActive) {
+        startRectangle(e);
+    } else if (isEraserActive) {
+        startErasing(e);
+    } else if (isEditActive) {
+        selectEditPoint(e);
     }
-    if (isLassoActive) startLasso(e);
-    if (isRectangleActive) startRectangle(e);
-    if (isEraserActive) startErasing(e);
-    if (isEditActive) selectEditPoint(e);
-});
+}
 
-canvas.addEventListener('mousemove', (e) => {
+function handleCanvasMouseMove(e) {
     if (isPenActive && isDrawing) {
         drawPenPreview(e);
-    }
-    if (isEditActive && selectedPoint) {
+    } else if (isEditActive && selectedPoint) {
         moveEditPoint(e);
     }
-});
+}
 
-canvas.addEventListener('mouseup', () => {
+function handleCanvasMouseUp() {
     if (isPenActive) {
         isDrawing = false;
-    }
-    if (isEditActive) {
+    } else if (isEditActive) {
         selectedPoint = null;
     }
-});
+}
 
-canvas.addEventListener('dblclick', () => {
-    if (isPenActive) finishPen();
-});
+function handleCanvasDblClick() {
+    if (isPenActive) {
+        finishPen();
+    }
+}
 
-function resizeAndDrawImage(img) {
+function drawImage(img) {
     const aspectRatio = img.width / img.height;
-    const newHeight = canvas.width / aspectRatio;
+    canvas.width = Math.min(img.width, 1000);
+    canvas.height = canvas.width / aspectRatio;
 
-    canvas.height = newHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, newHeight);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 }
 
 function addPenPoint(e) {
@@ -185,7 +231,7 @@ function addPenPoint(e) {
 
 function drawPenLines() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    resizeAndDrawImage(images[currentImageIndex].img);
+    drawImage(images[currentImageIndex].img);
     drawSelections();
 
     if (penPoints.length > 0) {
@@ -210,7 +256,7 @@ function drawPenLines() {
 function drawPenPreview(e) {
     if (penPoints.length > 0) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        resizeAndDrawImage(images[currentImageIndex].img);
+        drawImage(images[currentImageIndex].img);
         drawSelections();
 
         ctx.beginPath();
@@ -235,7 +281,7 @@ function drawPenPreview(e) {
 function drawAnchorPoints(points) {
     points.forEach(point => {
         ctx.beginPath();
-        ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI); // Smaller points
+        ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
         ctx.fillStyle = 'black';
         ctx.fill();
     });
@@ -297,7 +343,7 @@ function startRectangle(e) {
         const height = y - startY;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        resizeAndDrawImage(images[currentImageIndex].img);
+        drawImage(images[currentImageIndex].img);
         drawSelections();
 
         ctx.strokeStyle = getCategoryColor(categorySelect.value);
@@ -385,9 +431,9 @@ function isPointInPolygon(points, point) {
 
 function drawSelections() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    resizeAndDrawImage(images[currentImageIndex].img);
+    drawImage(images[currentImageIndex].img);
 
-    selections.forEach(selection => {
+    selections.forEach((selection, index) => {
         ctx.beginPath();
         ctx.lineWidth = 2;
         ctx.strokeStyle = getCategoryColor(selection.category);
@@ -413,12 +459,45 @@ function drawSelections() {
             }
             ctx.closePath();
             ctx.fill();
+            ctx.stroke();
             if (selection.type === 'pen') {
                 drawAnchorPoints(selection.points);
             }
         }
-        ctx.stroke();
+        drawNumber(selection, index);
     });
+}
+
+function drawNumber(selection, index) {
+    let x, y;
+    if (selection.type === 'rectangle') {
+        const [startX, startY, endX, endY] = [
+            selection.points[0].x, selection.points[0].y,
+            selection.points[2].x, selection.points[2].y
+        ];
+        x = (startX + endX) / 2;
+        y = (startY + endY) / 2;
+    } else if (selection.type === 'lasso' || selection.type === 'pen') {
+        let sumX = 0, sumY = 0;
+        selection.points.forEach(point => {
+            sumX += point.x;
+            sumY += point.y;
+        });
+        x = sumX / selection.points.length;
+        y = sumY / selection.points.length;
+    }
+
+    ctx.font = "12px Arial";
+    ctx.fillStyle = getCategoryColor(selection.category);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
+    ctx.textAlign = "center";
+    ctx.beginPath();
+    ctx.arc(x, y - 5, 10, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "white";
+    ctx.fillText(index + 1, x, y);
 }
 
 function getCategoryColor(category) {
@@ -469,22 +548,36 @@ function saveCurrentSelection() {
     images[currentImageIndex].selections = selections;
 }
 
-resultsBtn.addEventListener('click', () => {
-    saveCurrentSelection();
-    showPage(page3);
+downloadAllResultsBtn.addEventListener('click', () => {
+    generateAndDownloadResults();
 });
 
-downloadAllResultsBtn.addEventListener('click', () => {
+/*
+sendEmailBtn.addEventListener('click', () => {
+    const email = emailInput.value;
+    if (!validateEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+    generateAndSendResults(email);
+});
+
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+}
+
+function generateAndSendResults(email) {
     const zip = new JSZip();
     
     images.forEach((image, index) => {
-        if (image.selections.length === 0) return; // Skip images without selections
+        if (image.selections.length === 0) return;
         
-        // Add CSV
-        let csvContent = "Image Name,Category,Type,Coordinates/Size,Percentage\n";
+        let csvContent = "Number,Image Name,Category,Type,Coordinates/Size,Percentage, Area (pixels)\n";
         const totalArea = canvas.width * canvas.height;
 
-        image.selections.forEach(selection => {
+        image.selections.forEach((selection, index) => {
+            const number = index + 1;
             const name = `Image ${index + 1}`;
             const category = selection.category;
             const type = selection.type;
@@ -500,31 +593,153 @@ downloadAllResultsBtn.addEventListener('click', () => {
 
             percentage = ((area / totalArea) * 100).toFixed(2);
 
-            csvContent += `${name},${category},${type},${coords},${percentage}%\n`;
+            csvContent += `${number},${name},${category},${type},${coords},${percentage}%,${area}\n`;
         });
 
         zip.file(`evaluation_results_image_${index + 1}.csv`, csvContent);
 
-        // Add Screenshot
-        resizeAndDrawImage(image.img);
+        drawImage(image.img);
         drawSelectionsForImage(image.selections, image.img);
 
         canvas.toBlob(function(blob) {
             zip.file(`screenshot_image_${index + 1}.png`, blob);
             if (index === images.length - 1) {
                 zip.generateAsync({ type: 'blob' }).then(function(content) {
+                    sendZipToEmail(content, email);
+                });
+            }
+        }, 'image/png');
+    });
+}
+
+function sendZipToEmail(zipBlob, email) {
+    const formData = new FormData();
+    formData.append('file', zipBlob, 'evaluation_results.zip');
+    formData.append('email', email);
+
+    fetch('YOUR_SERVER_ENDPOINT', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Results sent to your email successfully!');
+        } else {
+            alert('Failed to send results to your email.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while sending the results.');
+    });
+}
+*/
+
+function generateAndDownloadResults() {
+    const zip = new JSZip();
+    
+    images.forEach((image, imageIndex) => {
+        if (image.selections.length === 0) return;
+
+        let csvContent = "Number,Image Name,Category,Type,Coordinates/Size,Percentage, Area (pixels)\n";
+        const totalArea = canvas.width * canvas.height;
+        let areasBySelection = new Array(image.selections.length).fill(0);
+        let coverage = {};
+
+        image.selections.forEach((selection, index) => {
+            const selectionId = index + 1;
+
+            if (selection.type === 'rectangle') {
+                fillRectangleArea(selection.startX, selection.startY, selection.width, selection.height, selectionId, coverage, areasBySelection);
+            } else if (selection.type === 'lasso' || selection.type === 'pen') {
+                fillLassoArea(selection.points, selectionId, coverage, areasBySelection);
+            }
+        });
+
+        image.selections.forEach((selection, index) => {
+            const area = areasBySelection[index];
+            const percentage = ((area / totalArea) * 100).toFixed(2);
+            const number = index + 1;
+            const name = `Image ${imageIndex + 1}`;
+            const category = selection.category;
+            const type = selection.type;
+            let coords;
+
+            if (type === 'rectangle') {
+                coords = `(${selection.startX},${selection.startY}), (${selection.startX + selection.width},${selection.startY + selection.height})`;
+            } else if (type === 'lasso' || type === 'pen') {
+                coords = selection.points.map(point => `(${point.x},${point.y})`).join('; ');
+            }
+
+            csvContent += `${number},${name},${category},${type},${coords},${percentage}%,${area}\n`;
+        });
+
+        const totalSelectedArea = areasBySelection.reduce((sum, area) => sum + area, 0);
+        const whiteSpaceArea = totalArea - totalSelectedArea;
+        const whiteSpacePercentage = ((whiteSpaceArea / totalArea) * 100).toFixed(2);
+        csvContent += `0,White Space,,white space,,,${whiteSpacePercentage}%,${whiteSpaceArea}\n`;
+
+        zip.file(`evaluation_results_image_${imageIndex + 1}.csv`, csvContent);
+
+        drawImage(image.img);
+        drawSelectionsForImage(image.selections, image.img);
+
+        canvas.toBlob(function(blob) {
+            zip.file(`screenshot_image_${imageIndex + 1}.png`, blob);
+            if (imageIndex === images.length - 1) {
+                zip.generateAsync({ type: 'blob' }).then(function(content) {
                     saveAs(content, 'evaluation_results.zip');
                 });
             }
         }, 'image/png');
     });
-});
+}
+
+function fillRectangleArea(startX, startY, width, height, selectionId, coverage, areasBySelection) {
+    for (let x = startX; x < startX + width; x++) {
+        for (let y = startY; y < startY + height; y++) {
+            const key = `${x},${y}`;
+            if (!coverage[key]) {
+                coverage[key] = new Set();
+            }
+            if (!coverage[key].has(selectionId)) {
+                coverage[key].add(selectionId);
+                areasBySelection[selectionId - 1]++;
+            }
+        }
+    }
+}
+
+function fillLassoArea(points, selectionId, coverage, areasBySelection) {
+    const path = new Path2D();
+    path.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        path.lineTo(points[i].x, points[i].y);
+    }
+    path.closePath();
+
+    for (let x = 0; x < canvas.width; x++) {
+        for (let y = 0; y < canvas.height; y++) {
+            if (ctx.isPointInPath(path, x, y)) {
+                const key = `${x},${y}`;
+                if (!coverage[key]) {
+                    coverage[key] = new Set();
+                }
+                if (!coverage[key].has(selectionId)) {
+                    coverage[key].add(selectionId);
+                    areasBySelection[selectionId - 1]++;
+                }
+            }
+        }
+    }
+}
 
 function drawSelectionsForImage(selections, img) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    resizeAndDrawImage(img);
+    drawImage(img);
 
-    selections.forEach(selection => {
+    selections.forEach((selection, index) => {
         ctx.beginPath();
         ctx.lineWidth = 2;
         ctx.strokeStyle = getCategoryColor(selection.category);
@@ -550,11 +765,12 @@ function drawSelectionsForImage(selections, img) {
             }
             ctx.closePath();
             ctx.fill();
+            ctx.stroke();
             if (selection.type === 'pen') {
                 drawAnchorPoints(selection.points);
             }
         }
-        ctx.stroke();
+        drawNumber(selection, index);
     });
 }
 
@@ -568,4 +784,3 @@ function calculateLassoArea(points) {
 }
 
 showPage(page1);
-

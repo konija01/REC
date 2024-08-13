@@ -1,6 +1,6 @@
 body {
     background-color: #E6E6E6;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     position: relative;
     margin: 0;
     padding: 0;
@@ -11,6 +11,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
+    padding: 10px;
 }
 
 .container {
@@ -133,11 +134,11 @@ body {
 }
 
 #previous-image {
-    left: -50px;
+    left: -60px;
 }
 
 #next-image {
-    right: -50px;
+    right: -60px;
 }
 
 #canvas {

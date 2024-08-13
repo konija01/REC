@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>REC – Research Environment for Cartography</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.min.js"></script>
@@ -14,14 +15,22 @@
         <button class="icon-btn" id="previous-page">
             <span class="icon">&#8592;</span>
         </button>
-        <button class="icon-btn" id="help-icon" title="Help">
-            <span class="icon">?</span>
-        </button>
+        <a href="https://www.canva.com/design/DAGNtwZTD1A/WdR3gvl_Cw6yn6DpMyK5Jg/view?utm_content=DAGNtwZTD1A&utm_campaign=designshare&utm_medium=link&utm_source=editor" target=”_blank” style="text-decoration:none;">
+            <button class="icon-btn" id="help-icon" title="Help">
+                <span class="icon">?</span>
+            </button>
+        </a>
     </div>
 
     <div class="container" id="page-1">
         <h1>REC – Research Environment for Cartography</h1>
-        <p>Welcome! Please upload your images to start the evaluation.</p>
+        
+        <small><p>Welcome!</p>
+        
+        <p>The REC – Research Environment for Cartography is a web-based application designed to facilitate the evaluation and annotation of cartographic elements within images. It allows users to upload images, annotate specific areas using various tools, and export the annotated data in CSV format, along with corresponding screenshots. </p>
+        <p>The REC tool is tailored for researchers and professionals in the fields of cartography, data visualization, and geographic information systems (GIS).</p>
+        
+        <p> Please upload your images to start the evaluation.</p></small>
         <input type="file" id="image-upload" multiple accept="image/*">
         <button class="red-btn" id="start-evaluation">
             Start Evaluation
@@ -32,7 +41,7 @@
         <button class="icon-btn change-image-btn" id="previous-image">
             <span class="icon">&#9664;</span>
         </button>
-        <h1>Image Evaluation</h1>
+        <h1><center>Image Evaluation</center></h1>
         <canvas id="canvas"></canvas>
         <button class="icon-btn change-image-btn" id="next-image">
             <span class="icon">&#9654;</span>
@@ -67,7 +76,7 @@
     </div>
 
     <div class="container hidden" id="page-3">
-        <h1>Please see your results</h1>
+        <h1><center>Please see your results</center></h1>
         <div class="results-container">
             <button class="red-btn" id="download-all-results">
                 Download All Results
@@ -88,6 +97,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="scripts.js"></script>
 </body>
 </html>

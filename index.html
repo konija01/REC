@@ -2,101 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>REC – Research Environment for Cartography</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="stylesheet" href="styles.css">
+    <link href="favicon.ico" rel="icon" type="image/x-icon">
+    <link href="styles.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
-    <div class="header-navigation">
-        <button class="icon-btn" id="previous-page">
-            <span class="icon">&#8592;</span>
+<div class="header-navigation">
+    <button class="icon-btn" id="previous-page">
+        <span class="icon">&#8592;</span>
+    </button>
+    <a href="https://www.canva.com/design/DAGNtwZTD1A/WdR3gvl_Cw6yn6DpMyK5Jg/view?utm_content=DAGNtwZTD1A&utm_campaign=designshare&utm_medium=link&utm_source=editor"
+       style="text-decoration:none;" target=”_blank”>
+        <button class="icon-btn" id="help-icon" title="Help">
+            <span class="icon">?</span>
         </button>
-        <a href="https://www.canva.com/design/DAGNtwZTD1A/WdR3gvl_Cw6yn6DpMyK5Jg/view?utm_content=DAGNtwZTD1A&utm_campaign=designshare&utm_medium=link&utm_source=editor" target=”_blank” style="text-decoration:none;">
-            <button class="icon-btn" id="help-icon" title="Help">
-                <span class="icon">?</span>
-            </button>
-        </a>
-    </div>
+    </a>
+</div>
 
-    <div class="container" id="page-1">
-        <h1>REC – Research Environment for Cartography</h1>
-        
-        <small><p>Welcome!</p>
-        
-        <p>The REC – Research Environment for Cartography is a web-based application designed to facilitate the evaluation and annotation of cartographic elements within images. It allows users to upload images, annotate specific areas using various tools, and export the annotated data in CSV format, along with corresponding screenshots. </p>
-        <p>The REC tool is tailored for researchers and professionals in the fields of cartography, data visualization, and geographic information systems (GIS).</p>
-        
+<div class="container" id="page-1">
+    <h1>REC – Research Environment for Cartography</h1>
+
+    <small><p>Welcome!</p>
+
+        <p>The REC – Research Environment for Cartography is a web-based application designed to facilitate the
+            evaluation and annotation of cartographic elements within images. It allows users to upload images, annotate
+            specific areas using various tools, and export the annotated data in CSV format, along with corresponding
+            screenshots. </p>
+        <p>The REC tool is tailored for researchers and professionals in the fields of cartography, data visualization,
+            and geographic information systems (GIS).</p>
+
         <p> Please upload your images to start the evaluation.</p></small>
-        <input type="file" id="image-upload" multiple accept="image/*">
-        <button class="red-btn" id="start-evaluation">
-            Start Evaluation
+    <input accept="image/*" id="image-upload" multiple type="file">
+    <button class="red-btn" id="start-evaluation">
+        Start Evaluation
+    </button>
+</div>
+
+<div class="container hidden" id="page-2">
+    <button class="icon-btn change-image-btn" id="previous-image">
+        <span class="icon">&#9664;</span>
+    </button>
+    <h1>
+        <center>Image Evaluation</center>
+    </h1>
+    <canvas id="canvas"></canvas>
+    <button class="icon-btn change-image-btn" id="next-image">
+        <span class="icon">&#9654;</span>
+    </button>
+</div>
+
+<div class="floating-toolbar" id="floating-panel">
+    <button class="tool-btn" id="pen-tool">
+        <span class="icon">✏️</span>
+    </button>
+    <button class="tool-btn" id="lasso-tool">
+        <span class="icon">🪢</span>
+    </button>
+    <button class="tool-btn" id="rectangle-tool">
+        <span class="icon">⬜</span>
+    </button>
+    <button class="tool-btn" id="edit-tool">
+        <span class="icon">🩹</span>
+    </button>
+    <button class="tool-btn less-gray-btn" id="eraser-tool">
+        <span class="icon">✂️</span>
+    </button>
+    <select id="category-select">
+        <option value="map">Map</option>
+        <option value="dataviz">Data Visualization</option>
+        <option value="text">Text</option>
+        <option value="illustration">Illustration</option>
+    </select>
+    <button class="red-btn" id="results">
+        Results
+    </button>
+</div>
+
+<div class="container hidden" id="page-3">
+    <h1 style="text-align: center;">Please see your results</h1>
+    <div class="results-container">
+        <button class="red-btn" id="download-all-results">
+            Download All Results
+        </button>
+        <!-- prepared button for sending emails -->
+        <div class="divider"></div>
+        <button class="red-btn" id="send-email">
+            Send to Email
+        </button>
+        <input type="email" id="email-input" placeholder="Enter your email">
+    </div>
+    <div class="evaluate-again-container">
+        <button class="gray-btn" id="evaluate-again">
+            Evaluate Again
         </button>
     </div>
+</div>
 
-    <div class="container hidden" id="page-2">
-        <button class="icon-btn change-image-btn" id="previous-image">
-            <span class="icon">&#9664;</span>
-        </button>
-        <h1><center>Image Evaluation</center></h1>
-        <canvas id="canvas"></canvas>
-        <button class="icon-btn change-image-btn" id="next-image">
-            <span class="icon">&#9654;</span>
-        </button>
-    </div>
-
-    <div class="floating-toolbar" id="floating-panel">
-        <button class="tool-btn" id="pen-tool">
-            <span class="icon">✏️</span>
-        </button>
-        <button class="tool-btn" id="lasso-tool">
-            <span class="icon">🪢</span>
-        </button>
-        <button class="tool-btn" id="rectangle-tool">
-            <span class="icon">⬜</span>
-        </button>
-         <button class="tool-btn" id="edit-tool">
-            <span class="icon">🩹</span>
-        </button>
-        <button class="tool-btn less-gray-btn" id="eraser-tool">
-            <span class="icon">✂️</span>
-        </button>
-        <select id="category-select">
-            <option value="map">Map</option>
-            <option value="dataviz">Data Visualization</option>
-            <option value="text">Text</option>
-            <option value="illustration">Illustration</option>
-        </select>
-        <button class="red-btn" id="results">
-            Results
-        </button>
-    </div>
-
-    <div class="container hidden" id="page-3">
-        <h1><center>Please see your results</center></h1>
-        <div class="results-container">
-            <button class="red-btn" id="download-all-results">
-                Download All Results
-            </button>
-            <!-- prepared button for sending emails -->
-            <!--
-            <div class="divider"></div>
-            <button class="red-btn" id="send-email">
-                Send to Email
-            </button>
-            <input type="email" id="email-input" placeholder="Enter your email">
-            -->
-        </div>
-        <div class="evaluate-again-container">
-            <button class="gray-btn" id="evaluate-again">
-                Evaluate Again
-            </button>
-        </div>
-    </div>
-
-    <script src="scripts.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

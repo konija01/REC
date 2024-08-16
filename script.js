@@ -14,10 +14,10 @@ const rectangleToolBtn = document.getElementById('rectangle-tool');
 const eraserToolBtn = document.getElementById('eraser-tool');
 const editToolBtn = document.getElementById('edit-tool');
 const downloadAllResultsBtn = document.getElementById('download-all-results');
-/*
+
 const sendEmailBtn = document.getElementById('send-email');
 const emailInput = document.getElementById('email-input');
-*/
+
 const nextImageBtn = document.getElementById('next-image');
 const previousImageBtn = document.getElementById('previous-image');
 const helpIconBtn = document.getElementById('help-icon');
@@ -55,7 +55,7 @@ startEvaluationBtn.addEventListener('click', () => {
     images = Array.from(files).map(file => {
         const img = new Image();
         img.src = URL.createObjectURL(file);
-        return { img, selections: [] };
+        return {img, selections: [], file};
     });
 
     images.forEach((image, index) => {
@@ -225,7 +225,7 @@ function drawImage(img) {
 function addPenPoint(e) {
     const x = e.offsetX;
     const y = e.offsetY;
-    penPoints.push({ x, y, curve: false });
+    penPoints.push({x, y, curve: false});
     drawPenLines();
 }
 
@@ -291,7 +291,7 @@ function finishPen() {
     if (penPoints.length > 0) {
         ctx.closePath();
         if (!isOverlap(penPoints, 'pen')) {
-            selections.push({ type: 'pen', points: penPoints, category: categorySelect.value });
+            selections.push({type: 'pen', points: penPoints, category: categorySelect.value});
         }
         penPoints = [];
         drawSelections();
@@ -302,12 +302,12 @@ function startLasso(e) {
     let points = [];
     const startX = e.offsetX;
     const startY = e.offsetY;
-    points.push({ x: startX, y: startY });
+    points.push({x: startX, y: startY});
 
     function drawLasso(e) {
         const x = e.offsetX;
         const y = e.offsetY;
-        points.push({ x, y });
+        points.push({x, y});
         ctx.lineTo(x, y);
         ctx.stroke();
     }
@@ -318,7 +318,7 @@ function startLasso(e) {
         ctx.closePath();
 
         if (!isOverlap(points, 'lasso')) {
-            selections.push({ type: 'lasso', points, category: categorySelect.value });
+            selections.push({type: 'lasso', points, category: categorySelect.value});
         }
         drawSelections();
     }
@@ -360,14 +360,14 @@ function startRectangle(e) {
         const width = endX - startX;
         const height = endY - startY;
 
-        if (!isOverlap([{ x: startX, y: startY }, { x: endX, y: endY }], 'rectangle')) {
+        if (!isOverlap([{x: startX, y: startY}, {x: endX, y: endY}], 'rectangle')) {
             selections.push({
                 type: 'rectangle',
                 points: [
-                    { x: startX, y: startY },
-                    { x: endX, y: startY },
-                    { x: endX, y: endY },
-                    { x: startX, y: endY }
+                    {x: startX, y: startY},
+                    {x: endX, y: startY},
+                    {x: endX, y: endY},
+                    {x: startX, y: endY}
                 ],
                 startX, startY, width, height, category: categorySelect.value
             });
@@ -388,7 +388,7 @@ function startErasing(e) {
             return !(x >= selection.startX && x <= selection.startX + selection.width && y >= selection.startY && y <= selection.startY + selection.height);
         }
         if (selection.type === 'lasso' || selection.type === 'pen') {
-            return !isPointInPolygon(selection.points, { x, y });
+            return !isPointInPolygon(selection.points, {x, y});
         }
         return true;
     });
@@ -552,7 +552,6 @@ downloadAllResultsBtn.addEventListener('click', () => {
     generateAndDownloadResults();
 });
 
-/*
 sendEmailBtn.addEventListener('click', () => {
     const email = emailInput.value;
     if (!validateEmail(email)) {
@@ -569,10 +568,10 @@ function validateEmail(email) {
 
 function generateAndSendResults(email) {
     const zip = new JSZip();
-    
+
     images.forEach((image, index) => {
         if (image.selections.length === 0) return;
-        
+
         let csvContent = "Number,Image Name,Category,Type,Coordinates/Size,Percentage, Area (pixels)\n";
         const totalArea = canvas.width * canvas.height;
 
@@ -601,10 +600,15 @@ function generateAndSendResults(email) {
         drawImage(image.img);
         drawSelectionsForImage(image.selections, image.img);
 
-        canvas.toBlob(function(blob) {
+        canvas.toBlob(function (blob) {
+
+            console.log(image.img);
+
+            zip.file(`image_${index + 1}.png`, image.file);
             zip.file(`screenshot_image_${index + 1}.png`, blob);
+
             if (index === images.length - 1) {
-                zip.generateAsync({ type: 'blob' }).then(function(content) {
+                zip.generateAsync({type: 'blob'}).then(function (content) {
                     sendZipToEmail(content, email);
                 });
             }
@@ -614,31 +618,31 @@ function generateAndSendResults(email) {
 
 function sendZipToEmail(zipBlob, email) {
     const formData = new FormData();
-    formData.append('file', zipBlob, 'evaluation_results.zip');
-    formData.append('email', email);
+    formData.append('form[file]', zipBlob, 'evaluation_results.zip');
+    formData.append('form[email]', email);
 
-    fetch('YOUR_SERVER_ENDPOINT', {
+    fetch('https://127.0.0.1:8000/data-upload', {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Results sent to your email successfully!');
-        } else {
-            alert('Failed to send results to your email.');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while sending the results.');
-    });
+        // .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (data.ok) {
+                alert('Results sent to your email successfully!');
+            } else {
+                alert('Failed to send results to your email.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while sending the results.');
+        });
 }
-*/
 
 function generateAndDownloadResults() {
     const zip = new JSZip();
-    
+
     images.forEach((image, imageIndex) => {
         if (image.selections.length === 0) return;
 
@@ -685,10 +689,10 @@ function generateAndDownloadResults() {
         drawImage(image.img);
         drawSelectionsForImage(image.selections, image.img);
 
-        canvas.toBlob(function(blob) {
+        canvas.toBlob(function (blob) {
             zip.file(`screenshot_image_${imageIndex + 1}.png`, blob);
             if (imageIndex === images.length - 1) {
-                zip.generateAsync({ type: 'blob' }).then(function(content) {
+                zip.generateAsync({type: 'blob'}).then(function (content) {
                     saveAs(content, 'evaluation_results.zip');
                 });
             }
